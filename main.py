@@ -12,11 +12,18 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI(
     title="High Profile Private Secondary School – Attendance",
     description="Digital attendance and class activity system",
-    version="1.1.0"
+    version="1.2.0"
 )
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
+
+# Create static folders if they do not exist (important for Railway)
+static_dir = os.path.join(BASE_DIR, "static")
+os.makedirs(static_dir, exist_ok=True)
+os.makedirs(os.path.join(static_dir, "css"), exist_ok=True)
+os.makedirs(os.path.join(static_dir, "js"), exist_ok=True)
+
+app.mount("/static", StaticFiles(directory=static_dir), name="static")
 templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
 
 app.include_router(auth.router)
@@ -48,6 +55,11 @@ async def mark_attendance_page(request: Request):
     return templates.TemplateResponse(request, "mark_attendance.html")
 
 
+@app.get("/mark-subject-attendance", response_class=HTMLResponse)
+async def mark_subject_attendance_page(request: Request):
+    return templates.TemplateResponse(request, "mark_subject_attendance.html")
+
+
 @app.get("/report", response_class=HTMLResponse)
 async def report_page(request: Request):
     return templates.TemplateResponse(request, "report.html")
@@ -61,6 +73,11 @@ async def students_page(request: Request):
 @app.get("/activities", response_class=HTMLResponse)
 async def activities_page(request: Request):
     return templates.TemplateResponse(request, "activities.html")
+
+
+@app.get("/assessments", response_class=HTMLResponse)
+async def assessments_page(request: Request):
+    return templates.TemplateResponse(request, "assessments.html")
 
 
 @app.get("/manage-students", response_class=HTMLResponse)
@@ -77,22 +94,17 @@ async def manage_users_page(request: Request):
 async def assign_form_teachers_page(request: Request):
     return templates.TemplateResponse(request, "assign_form_teachers.html")
 
+
 @app.get("/fees", response_class=HTMLResponse)
 async def fees_page(request: Request):
     return templates.TemplateResponse(request, "fees.html")
+
 
 @app.get("/notifications", response_class=HTMLResponse)
 async def notifications_page(request: Request):
     return templates.TemplateResponse(request, "notifications.html")
 
-@app.get("/assessments", response_class=HTMLResponse)
-async def assessments_page(request: Request):
-    return templates.TemplateResponse(request, "assessments.html")
 
 @app.get("/change-password", response_class=HTMLResponse)
 async def change_password_page(request: Request):
     return templates.TemplateResponse(request, "change_password.html")
-
-@app.get("/mark-subject-attendance", response_class=HTMLResponse)
-async def mark_subject_attendance_page(request: Request):
-    return templates.TemplateResponse(request, "mark_subject_attendance.html")
